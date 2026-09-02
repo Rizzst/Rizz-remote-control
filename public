@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kontrol RIZZ RSI MARTI</title>
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; background:#111; color:#eee; max-width:520px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:20px; margin-bottom:4px; }
+  h2 { font-size:14px; color:#ccc; margin:0 0 10px; }
+  p.sub { color:#999; font-size:13px; margin-top:0; }
+  .card { background:#1b1b1b; border:1px solid #333; border-radius:12px; padding:16px; margin-bottom:16px; }
+  label { display:block; font-size:13px; color:#bbb; margin-bottom:6px; }
+  select, input[type=number], input[type=password], input[type=text] { width:100%; padding:10px; border-radius:8px; border:1px solid #444; background:#222; color:#eee; box-sizing:border-box; font-size:14px; margin-bottom:14px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .switch-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .switch { position:relative; width:52px; height:28px; flex-shrink:0; }
+  .switch input { display:none; }
+  .slider { position:absolute; inset:0; background:#444; border-radius:999px; transition:.2s; cursor:pointer; }
+  .slider:before { content:""; position:absolute; width:22px; height:22px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+  input:checked + .slider { background:#2e9e5b; }
+  input:checked + .slider:before { transform:translateX(24px); }
+  button { width:100%; padding:12px; border-radius:8px; border:none; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:8px; }
+  .btn-save { background:#2e6fe0; color:#fff; position:sticky; bottom:12px; }
+  .btn-danger { background:#c0392b; color:#fff; }
+  .status { font-size:13px; text-align:center; margin-top:8px; color:#999; }
+</style>
+</head>
+<body>
+  <h1>Kontrol RIZZ RSI MARTI</h1>
+  <p class="sub">Ubah setting di sini, EA menariknya otomatis saat polling berikutnya.</p>
+
+  <div class="card">
+    <label>API key</label>
+    <input type="password" id="apiKey" placeholder="Masukkan API key server">
+  </div>
+
+  <div class="card">
+    <div class="switch-row">
+      <label style="margin:0;">EA aktif (boleh buka basket baru)</label>
+      <label class="switch">
+        <input type="checkbox" id="enabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>RSI</h2>
+    <div class="row2">
+      <div><label>Overbought</label><input type="number" id="rsiOverbought" step="0.1"></div>
+      <div><label>Oversold</label><input type="number" id="rsiOversold" step="0.1"></div>
+    </div>
+    <label>Periode RSI</label>
+    <input type="number" id="rsiPeriod" step="1">
+  </div>
+
+  <div class="card">
+    <h2>Layer / grid martingale</h2>
+    <div class="row2">
+      <div><label>Jarak antar layer (pip)</label><input type="number" id="layerDistancePips" step="0.1"></div>
+      <div><label>Maks layer</label><input type="number" id="maxLayers" step="1"></div>
+    </div>
+    <div class="row2">
+      <div><label>Lot awal</label><input type="number" id="initialLot" step="0.01"></div>
+      <div><label>Multiplier</label><input type="number" id="martingaleMultiplier" step="0.01"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>L1 entry mode</h2>
+    <select id="l1EntryMode">
+      <option value="0">Buy Limit / Sell Limit</option>
+      <option value="1">Buy Stop / Sell Stop</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h2>Mode exit</h2>
+    <select id="exitMode">
+      <option value="0">SL Trailing</option>
+      <option value="1">TP Fix per Layer</option>
+    </select>
+    <div class="row2">
+      <div><label>BE SL start (poin)</label><input type="number" id="beslStartPoints" step="1"></div>
+      <div><label>BE SL offset (poin)</label><input type="number" id="beslOffsetPoints" step="1"></div>
+    </div>
+    <label>TP fix per layer (poin)</label>
+    <input type="number" id="fixedTpPoints" step="1">
+  </div>
+
+  <div class="card">
+    <h2>Sesi trading</h2>
+    <select id="tradingSession">
+      <option value="0">24 Jam</option>
+      <option value="1">London</option>
+      <option value="2">New York</option>
+      <option value="3">London + NY</option>
+    </select>
+    <div class="row2">
+      <div><label>London mulai (jam)</label><input type="number" id="londonStartHour" step="1"></div>
+      <div><label>London selesai (jam)</label><input type="number" id="londonEndHour" step="1"></div>
+    </div>
+    <div class="row2">
+      <div><label>NY mulai (jam)</label><input type="number" id="newyorkStartHour" step="1"></div>
+      <div><label>NY selesai (jam)</label><input type="number" id="newyorkEndHour" step="1"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Max drawdown</h2>
+    <label>Limit floating loss (mata uang akun)</label>
+    <input type="number" id="maxDrawdown" step="1">
+  </div>
+
+  <div class="card">
+    <div class="switch-row">
+      <label style="margin:0;">Filter news (USD)</label>
+      <label class="switch">
+        <input type="checkbox" id="useNewsFilter">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <label>Level dampak minimum</label>
+    <select id="newsMinImpact">
+      <option value="0">High only</option>
+      <option value="1">Medium + High</option>
+      <option value="2">Semua level</option>
+    </select>
+    <div class="row2">
+      <div><label>Menit sebelum</label><input type="number" id="newsMinutesBefore" step="1"></div>
+      <div><label>Menit sesudah</label><input type="number" id="newsMinutesAfter" step="1"></div>
+    </div>
+  </div>
+
+  <button class="btn-save" onclick="saveState()">Simpan semua setting</button>
+
+  <div class="card">
+    <label>Darurat</label>
+    <button class="btn-danger" onclick="forceCloseAll()">Close all posisi sekarang</button>
+  </div>
+
+  <p class="status" id="status">Memuat...</p>
+
+<script>
+function apiKey() { return document.getElementById('apiKey').value.trim(); }
+
+const FIELD_MAP = {
+  enabled: 'enabled',
+  rsiOverbought: 'rsi_overbought',
+  rsiOversold: 'rsi_oversold',
+  rsiPeriod: 'rsi_period',
+  layerDistancePips: 'layer_distance_pips',
+  maxLayers: 'max_layers',
+  initialLot: 'initial_lot',
+  martingaleMultiplier: 'martingale_multiplier',
+  l1EntryMode: 'l1_entry_mode',
+  exitMode: 'exit_mode',
+  beslStartPoints: 'besl_start_points',
+  beslOffsetPoints: 'besl_offset_points',
+  fixedTpPoints: 'fixed_tp_points',
+  tradingSession: 'trading_session',
+  londonStartHour: 'london_start_hour',
+  londonEndHour: 'london_end_hour',
+  newyorkStartHour: 'newyork_start_hour',
+  newyorkEndHour: 'newyork_end_hour',
+  maxDrawdown: 'max_drawdown',
+  useNewsFilter: 'use_news_filter',
+  newsMinImpact: 'news_min_impact',
+  newsMinutesBefore: 'news_minutes_before',
+  newsMinutesAfter: 'news_minutes_after'
+};
+const CHECKBOX_IDS = ['enabled', 'useNewsFilter'];
+
+async function loadState() {
+  const key = apiKey();
+  if (!key) { setStatus('Masukkan API key dulu'); return; }
+  try {
+    const res = await fetch('/api/state?key=' + encodeURIComponent(key));
+    if (!res.ok) { setStatus('API key salah'); return; }
+    const s = await res.json();
+    for (const [elId, field] of Object.entries(FIELD_MAP)) {
+      const el = document.getElementById(elId);
+      if (!el) continue;
+      if (CHECKBOX_IDS.includes(elId)) el.checked = !!s[field];
+      else el.value = s[field];
+    }
+    setStatus('Setting termuat');
+  } catch (e) {
+    setStatus('Gagal menghubungi server');
+  }
+}
+
+async function saveState() {
+  const key = apiKey();
+  if (!key) { setStatus('Masukkan API key dulu'); return; }
+  const body = {};
+  for (const [elId, field] of Object.entries(FIELD_MAP)) {
+    const el = document.getElementById(elId);
+    if (!el) continue;
+    if (CHECKBOX_IDS.includes(elId)) body[field] = el.checked;
+    else body[field] = Number(el.value);
+  }
+  try {
+    const res = await fetch('/api/state?key=' + encodeURIComponent(key), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) { setStatus('Gagal menyimpan - cek API key'); return; }
+    setStatus('Tersimpan. EA akan menerapkannya di polling berikutnya.');
+  } catch (e) {
+    setStatus('Gagal menghubungi server');
+  }
+}
+
+async function forceCloseAll() {
+  const key = apiKey();
+  if (!key) { setStatus('Masukkan API key dulu'); return; }
+  if (!confirm('Yakin mau menutup SEMUA posisi EA sekarang?')) return;
+  try {
+    const res = await fetch('/api/state?key=' + encodeURIComponent(key), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ force_close_all: true })
+    });
+    if (!res.ok) { setStatus('Gagal - cek API key'); return; }
+    setStatus('Perintah close all terkirim. Menunggu EA polling berikutnya.');
+  } catch (e) {
+    setStatus('Gagal menghubungi server');
+  }
+}
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+}
+
+document.getElementById('apiKey').addEventListener('change', loadState);
+</script>
+</body>
+</html>
